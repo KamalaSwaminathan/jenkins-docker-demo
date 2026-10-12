@@ -7,8 +7,6 @@ pipeline {
     }
 
     environment {
-        // lets Jenkins find docker on macOS
-        PATH+DOCKER = "/usr/local/bin:/opt/homebrew/bin"
         IMAGE_NAME = 'jenkins-docker-demo'
         IMAGE_TAG  = "${BUILD_NUMBER}"
     }
@@ -47,13 +45,17 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+                withEnv(["PATH+DOCKER=/usr/local/bin:/opt/homebrew/bin"]) {
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+                }
             }
         }
 
         stage('Docker Run') {
             steps {
-                sh "docker run --rm --name demo-${BUILD_NUMBER} ${IMAGE_NAME}:${IMAGE_TAG}"
+                withEnv(["PATH+DOCKER=/usr/local/bin:/opt/homebrew/bin"]) {
+                    sh "docker run --rm --name demo-${BUILD_NUMBER} ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
             }
         }
     }
